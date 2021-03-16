@@ -1,0 +1,14 @@
+*.pyc
+*.spyproject
+.spyproject/*.*
+.vscode
+.mypy_cache
+.env
+*.env
+*.code-workspace
+
+test_data/
+
+/dist/
+/*.egg-info
+.DS_Store
