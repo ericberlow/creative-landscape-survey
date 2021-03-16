@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Find creative species of HC team - 
+Find creative species of website team  - 
 using new survey results and matching to archetypes from original survey
+
 """
 
 import sys
 sys.path.append("../CommonFunctions")
 import pandas as pd
 import pathlib as pl #path library
-import find_creative_style as cs
+import find_matches_functions as fm
 pd.set_option('display.expand_frame_repr', False) # expand display of data columns if screen is wide
 import params as param
 
@@ -43,16 +44,16 @@ if __name__ == '__main__':
     df =  pd.read_excel(team, engine='openpyxl') # team survey results
 
     # add habit list and top cluster habit list to archetypes
-    df_arch, archHabits, topHabits = cs.process_archetypes(df_arch, df_clus)
+    df_arch, archHabits, topHabits = fm.process_archetypes(df_arch, df_clus)
     
     # rename team response columns 
     df.rename(columns = param.newCol_renameDict, inplace=True)
 
     
     # for new respndents, convert ordinal scores to list of habits
-    df['habits_all'] = cs.get_habits_from_scores_new(df,  param.orig_OrdCols, param.new_OrdCols, param.habitDict)
+    df['habits_all'] = fm.get_habits_from_scores_new(df,  param.orig_OrdCols, param.new_OrdCols, param.habitDict)
     # add lists of original habits, top clus habits, and habit counts for each person.
-    df = cs.add_habit_lists_counts(df, archHabits, topHabits)
+    df = fm.add_habit_lists_counts(df, archHabits, topHabits)
     
     # clean columns
     raw_response_cols = param.orig_OrdCols + param.new_OrdCols + param.new_CatCols
@@ -75,7 +76,7 @@ if __name__ == '__main__':
             if i %100 == 0: # print row number every 100 rows to show progress
                 print("Processing row %d"%i)
             row = df.loc[i] # get the data for the individual respondent
-            df_top_matches = cs.find_top_n_matches(row, df_arch, keepCols, topN =topN, sortby=sortby)
+            df_top_matches = fm.find_top_n_matches(row, df_arch, keepCols, topN =topN, sortby=sortby)
             respondents.append(df_top_matches) 
         # combine top matches for all respondents into one dataframe
         df_top_n_matches = pd.concat(respondents) 
@@ -86,7 +87,7 @@ if __name__ == '__main__':
         
         ## aggregate and summarize > get single best match
         groupVars = ['id', 'Name', 'Habits_All','Habits_Orig','Top_Habits','n_habits_all', 'n_habits_orig', 'Cluster_ID_match', 'Clus_Top_Habits_match']
-        df_best_match = cs.get_best_match(df_top_n_matches, groupVars)
+        df_best_match = fm.get_best_match(df_top_n_matches, groupVars)
         
         # convert habits to list
         habit_attrs = ['Habits_All','Habits_Orig','Top_Habits', 'Clus_Top_Habits_match']
@@ -120,7 +121,7 @@ if __name__ == '__main__':
     df_best_matches = df_best_matches.merge(df_survey_responses, on='id')
     
     # add Rare Breed if 3 or fewer original survey habits
-    cs.add_rare_breed(df_best_matches, 3)
+    fm.add_rare_breed(df_best_matches, 3)
         
     
     # rename columns
@@ -132,7 +133,7 @@ if __name__ == '__main__':
     # rename habits in habit lists
     habitCols = ['Habits_All', 'Habits_Orig', 'Top_Habits','Clus_Top_Habits_match','Habits_Orig_unique', 'Habits_All_unique','Habits_TopClus_overlap']
     for col in habitCols:
-        df_best_matches[col] = df_best_matches[col].apply(lambda x: cs.rename_habits(x))
+        df_best_matches[col] = df_best_matches[col].apply(lambda x: fm.rename_habits(x))
         
     
     # write results file

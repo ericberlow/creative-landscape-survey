@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
+Functions to process raw respondent data from new survey
+Convert that to habits
+Find top n best matches from 'archetypes' of original survey of 10K people.
+Generate habit lists to see overlap with best cluster, unique habits, etc.
+Clean habit naming for consisntency.
 
-This is a temporary script file.
 """
 
 import sys
@@ -13,14 +16,6 @@ import params as param
 pd.set_option('display.expand_frame_repr', False) # expand display of data columns if screen is wide
 
 #
-
-'''
-notes: 
-    process archetypes and cluster top habits files > write that to excel and use that as the reference file
-    
-'''
-
-    
 
 def process_archetypes(df_arch, df_clus):
     # convert archetype habit tags to list
@@ -323,99 +318,3 @@ def rename_habits(x, habitDict = param.habit_renameDict):
 
 ################################################################
 
-if __name__ == '__main__':
-    # paths
-    wd = pl.Path.cwd()
-    datapath = wd/"data"
-    resultspath = wd/"results"
-
-    
-    # file names
-    archnw = datapath/"Archetypes_Network.xlsx"
-    fullnw = datapath/"CreativeStyles_Network_all.xlsx"  
-    styles = datapath/"CreativeStyles_Tag_Summary.xlsx"
-    
-    
-    print ('reading files')
-    df_arch = pd.read_excel(archnw, sheet_name ='nodes', engine='openpyxl')
-    df_full = pd.read_excel(fullnw, sheet_name ='nodes', engine='openpyxl')
-    df_clus = pd.read_excel(styles, engine='openpyxl')
-    
-    dropCols = ['Gender', 'Discipline', 'Creative Advice']
-    df_arch.drop(dropCols, axis=1, inplace=True )
-    df_full.drop(dropCols, axis=1, inplace=True )
-    
-
-    # convert habit tags to list
-    df_arch['habit_list'] = df_arch['Creative_Habits'].apply(lambda x: str(x).split("|"))
-    df_full['habit_list'] = df_full['Creative_Habits'].apply(lambda x: str(x).split("|"))
-    
-    # get list of habits that are in reference dataset:  top cluster habits and arch habits (42)
-    topHabits, archHabits = get_reference_habit_lists(df_arch, df_clus) 
-    
-    # add to archetypes a list of top style habits for each style 
-    df_top_habits = df_clus.groupby('Cluster_ID')['Creative_Habits'].apply(list).reset_index()
-    df_top_habits.columns = ['Cluster_ID', 'Clus_Top_Habits']
-    df_arch = df_arch.merge(df_top_habits, on='Cluster_ID')
-    
-    # get people not in archetypes
-    df = df_full[~df_full.id.isin(df_arch.id)].reset_index(drop=True)
-    
-    # for new respndents, convert ordinal scores to list of habits
-    df['habits_all'] = get_habits_from_scores_orig(df, param.orig_OrdCols, param.habitDict)
-    
-    # trim habit list to those that were in original survey
-    df['habits_orig'] = df['habits_all'].apply(lambda x: [h for h in x if h in archHabits])
-    # get list of habits that are among the top habits of the clusters
-    df['top_habits'] = df['habits_all'].apply(lambda x: [h for h in x if h in topHabits])
-    
-    # check - compare new habit list to ones in archetype list
-    df['n_habits_all'] = df['habits_all'].apply(lambda x: len(x)) #habits from survey response
-    df['n_habits_orig'] = df['habits_orig'].apply(lambda x: len(x)) # habits that from original survey
-    df['n_top_habits'] = df['top_habits'].apply(lambda x: len(x)) # habits that from original survey
-    
-    df['n_diff'] = df['n_habits_all'] - df['n_habits_orig']
-    # get list of habits that are different between new and old survey                                 
-    df['new_habits'] = df.apply(lambda x: set(x['habits_all']).symmetric_difference(set(x['habits_orig'])), axis=1)
-    print("max difference in habit lists = %s" %str(df['n_diff'].max()))
-    
-    # convert habit lists to pipe-seprated strings
-    df['Habits_All'] = df['habits_all'].apply(lambda x: "|".join(x))
-    df['Habits_Orig'] = df['habits_orig'].apply(lambda x: "|".join(x))
-    df['Top_Habits'] = df['top_habits'].apply(lambda x: "|".join(x))
-    
-    # clean columns
-    df_keepCols = ['id', 'Habits_All', 'Habits_Orig', 'Top_Habits', 'n_habits_orig', 'Cluster_ID'] #+ ordinalCols
-    df = df[df_keepCols] 
-    
-    '''
-    # for one respondent find top n most similar archetypes
-    respondent = df.iloc[1]
-    df_top_matches = find_top_n_matches(respondent, df_arch, df_keepCols, topN = 1)
-    '''
-    
-    # sampel for testing
-    #df = df.head(100)
-
-    # for dataframe of respondents - for each, find topN  most similar archetype
-    # concatenate into database enriched with matching archetype info
-    results = []    # list of dataframes
-    for i in df.index:  # loop over rows in the dataframe
-        if i %100 == 0: # print row number every 100 rows to show progress
-            print("Processing row %d"%i)
-        row = df.loc[i] # get the data for the individual respondent
-        df_top_matches = find_top_n_matches(row, df_arch, df_keepCols, topN = 5, sortby=['habits_sim', 'top_habits_sim'])
-        results.append(df_top_matches)      
-    df_top_n_matches = pd.concat(results) # combine top matches for all respondents into one dataframe
-    
-    ## aggregate and summarize > get single best match
-    groupVars = ['id', 'Habits_All','Habits_Orig','Top_Habits', 'n_habits_orig', 'Cluster_ID_match', 'Cluster_ID'] #+ ordinalCols +
-    df_best_match = get_best_match(df_top_n_matches, groupVars)
-    
-    # write files
-    df_top_n_matches.to_csv(resultspath/('top_n_matches.csv'), index=False)
-    df_best_match.to_csv(resultspath/('best_match.csv'), index=False)
-    
-    
-    
-    

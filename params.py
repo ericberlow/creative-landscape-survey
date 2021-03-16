@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Mar 11 07:33:05 2021
+lists and dictionaries of column names
+mappings of new columns to columns of original survey
+mappings of column headers to creative habits
+renaming dictionaries 
+etc.
 
-@author: ericberlow
 """
 
-
-#TODO: rename habits
 
 
 # list of ordinal columns
