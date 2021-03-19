@@ -9,7 +9,23 @@ etc.
 
 """
 
+import pathlib as pl
 
+# paths
+wd = pl.Path.cwd()
+datapath = wd/"data"
+resultspath = wd/"results"
+
+## attribute lists for cleaning columns
+
+   # variables from TopN matches to groupby and keep when summarizing top n matches. 
+topN_groupVars = ['id', 'Habits_All','Habits_Orig','Top_Habits',  'n_habits_all', 'n_habits_orig', 'Cluster_ID', 'Clus_Top_Habits' ] + ['Name']
+   # final attributes to keep in the best_match summary 
+bestMatch_finalCols = ['id', 'Habits_All', 'Habits_Orig', 'Top_Habits', 'n_habits_all', 'n_habits_orig',
+                 'Cluster_ID', 'Clus_Top_Habits','frac_top_habits', 'top_habits_sim','habits_sim',
+                 'Habits_unique', 'Habits_Clus_shared', 'Habits_Clus_union', 'n_unique', 'n_shared', 'n_union', 'x_tsne', 'y_tsne'] + ['Name']
+                 #  'sortby_strategy',  'count', 'frac_top_'+str(topN) ] 
+    
 
 # list of ordinal columns
 orig_OrdCols = ['Montasker -- Multitasker', # 'Monotasker -- Multitasker'
@@ -52,7 +68,6 @@ CreativeProcessResponses = {"Seeing the big picture and defining the problem": "
                             "Picking the winning solutions from the options": "Evaluator",
                             "Executing and getting things done": "Implementer"
                             }
-
 
 # column name mapping:
 newCol_renameDict = {'#': 'id', 
