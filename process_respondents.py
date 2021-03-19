@@ -29,7 +29,6 @@ if __name__ == '__main__':
     sortby= ['top_habits_sim','habits_sim'] # first find archetype with highest average overlap in cluster top habits, then pick most similar archetype within
     # other options tested - sorty by 'frac_top_habits', then 'habits_sim' ; sort by 'habits_sim', then by 'frac_top_habits'
     
-               
     print ('reading files')
     df_arch = pd.read_excel(archnw, sheet_name ='nodes', engine='openpyxl')
     df_arch.drop(['Discipline'], axis=1, inplace=True )

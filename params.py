@@ -50,7 +50,6 @@ orig_OrdCols = ['Montasker -- Multitasker', # 'Monotasker -- Multitasker'
              'Stifled_By vs Stimulated_By Constraints'] 
 
 
-
 new_OrdCols = ['Happy -- Tortured',
                'Non-Performer -- Performer', 
                'Solo-Ideator -- Group-Ideator',
