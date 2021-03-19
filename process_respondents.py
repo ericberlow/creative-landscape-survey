@@ -13,17 +13,20 @@ import find_matches_functions as fm
 pd.set_option('display.expand_frame_repr', False) # expand display of data columns if screen is wide
 import params as param
 
+# paths
+wd = pl.Path.cwd()
+datapath = wd/"data"
+resultspath = wd/"results"
 
 
-
-def get_topN_matches(df, df_arch, keepCols, topN=10, sorby=['top_habits_sim','habits_sim'], write=False):
+def get_topN_matches(df, df_arch, keepCols, resultspath, topN=10, sortby=['top_habits_sim','habits_sim'], write=False):
     '''
     # loop thru dataframe of new respondents, find topN  most similar archetype and their cluster and position
     df : dataframe of new survey respondents
     df_arch : dataframe of reference population (cluster archetypes from origional survey)
     keepCols : columns to keep in processed results 
     topN : number of top matches to find. The default is 10.
-    sorby : strategy for finding best match - default is- first  find best overlap with top cluster habits, then find most similar individual within
+    sortby : strategy for finding best match - default is- first  find best overlap with top cluster habits, then find most similar individual within
 
     Returns - dataframe with topN matches, their clusters 
 
@@ -46,7 +49,7 @@ def get_topN_matches(df, df_arch, keepCols, topN=10, sorby=['top_habits_sim','ha
     return df_top_n_matches
        
 
-def process_topN_matches(df_top_n_matches, df_survey_responses, write=True):
+def process_topN_matches(df_top_n_matches, df_survey_responses, topN, sortby, resultspath, write=True):
     '''
     Aggregate results of top N matches to get single best match and x, y position
     Add final listls of unique habits and overlap of habits with final cluster
@@ -111,35 +114,14 @@ def process_topN_matches(df_top_n_matches, df_survey_responses, write=True):
     return df_best_match
 
 ################################################################
+def process_respondent(df):
+    '''
+    df - team survey results
+    '''
+    df_arch, archHabits, topHabits, topN, sortBy = prepare_data()
 
-if __name__ == '__main__':
-    # paths
-    wd = pl.Path.cwd()
-    datapath = wd/"data"
-    resultspath = wd/"results"
-
-    
-    # file names
-    archnw = datapath/"Archetypes_Network.xlsx"
-    top_habits = datapath/"Cluster_Top_Habits.xlsx"
-    team = datapath/"Test_Survey_Responses.xlsx"   
-    
-    # params
-    topN = 10 # number of top matches to find              
-    sortby= ['top_habits_sim','habits_sim'] # first find cluster with highest average overlap in top habits, then pick most similar person within
-               
-    print ('reading files')
-    df_arch = pd.read_excel(archnw, sheet_name ='nodes', engine='openpyxl')
-    df_arch.drop(['Discipline'], axis=1, inplace=True )
-    df_clus = pd.read_excel(top_habits, engine='openpyxl')
-    df =  pd.read_excel(team, engine='openpyxl') # team survey results
-
-    # add habit list and top cluster habit list to archetypes
-    df_arch, archHabits, topHabits = fm.process_archetypes(df_arch, df_clus)
-    
     # rename noew response columns 
     df.rename(columns = param.newCol_renameDict, inplace=True)
-
     
     # for new respndents, convert ordinal scores to list of habits
     df['habits_all'] = fm.get_habits_from_scores_new(df,  param.orig_OrdCols, param.new_OrdCols, param.habitDict)
@@ -157,8 +139,52 @@ if __name__ == '__main__':
 
     
     ##### find top N matches
-    df_top_n_matches = get_topN_matches(df, df_arch, keepCols, topN=topN, sorby=sortby, write=False)
+    df_top_n_matches = get_topN_matches(df, df_arch, keepCols, resultspath, topN, sortBy, write=False)
     
     ######  find best matches for each respondent ##### 
-    df_best_match = process_topN_matches(df_top_n_matches, df_survey_responses, write=True)
+    df_best_match = process_topN_matches(df_top_n_matches, df_survey_responses,topN, sortBy, resultspath, write=True)
+    return df_best_match
+
+################################################################
+# methods for API
+def process_single_respondent(respondent_data):
+    items = respondent_data.items()
+    data = dict()
+    for k, v in items:
+        data[k] = [v]
+    frame = pd.DataFrame(data)
+    res_data = process_respondent(frame)
+    res_dict = res_data.to_dict()
+
+    result = dict()
+    for k, v in res_dict.items():
+        result[k] = v[0]
+
+    return result
+
+def prepare_data():
+    wd = pl.Path.cwd()
+    datapath = wd/"data"
     
+    # file names
+    archnw = datapath/"Archetypes_Network.xlsx"
+    top_habits = datapath/"Cluster_Top_Habits.xlsx"
+    
+    # params
+    topN = 10 # number of top matches to find              
+    sortby= ['top_habits_sim','habits_sim'] # first find cluster with highest average overlap in top habits, then pick most similar person within
+               
+    print ('reading files')
+    df_arch = pd.read_excel(archnw, sheet_name ='nodes', engine='openpyxl')
+    df_arch.drop(['Discipline'], axis=1, inplace=True )
+    df_clus = pd.read_excel(top_habits, engine='openpyxl')
+
+    # add habit list and top cluster habit list to archetypes
+    df_arch, archHabits, topHabits = fm.process_archetypes(df_arch, df_clus)
+    return df_arch, archHabits, topHabits, topN, sortby
+    
+if __name__ == '__main__':
+    # file names
+    team = datapath/"Test_Survey_Responses.xlsx"   
+    
+    process_respondent(pd.read_excel(team, engine='openpyxl'))

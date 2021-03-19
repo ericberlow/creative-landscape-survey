@@ -1,18 +1,19 @@
 from flask import Flask, request, Response
 from flask_restful import Api, Resource, reqparse
-import process_respondents as pr
+from process_respondents import process_single_respondent
+import json
 app = Flask(__name__)
 api = Api(app)
 
 
-class Habits(Resource):
-  def post(self, id):
-        params = request.json
-        result = pr.process_respondent('api_response')
-        return Response(result, mimetype='application/json')
+class Questionnaire(Resource):
+  def post(self):
+        respondent = request.json
+        result = process_single_respondent(respondent)
+        return Response(json.dumps(result), mimetype='application/json')
 
 
-api.add_resource(Habits, "/habits", "/habits/", "/habits/<string:id>")
+api.add_resource(Questionnaire, "/questionnaire", "/questionnaire/")
 
 if __name__ == '__main__':
     app.run(debug=True)
