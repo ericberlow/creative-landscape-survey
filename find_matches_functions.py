@@ -252,7 +252,7 @@ def get_best_match(df_topMatches, groupVars):
     
     # now get match with highest cluster count or if tied highest similarity
     df_top_match_count.sort_values(['id', 'count', 'top_habits_sim'], ascending=[True, False, False], inplace=True)
-    df_best_match =  df_top_match_count.groupby(['id', 'Name']).first().reset_index()
+    df_best_match =  df_top_match_count.groupby(['id']).first().reset_index()
 
     return df_best_match
 
