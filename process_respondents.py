@@ -12,12 +12,12 @@ import pathlib as pl #path library
 import find_matches_functions as fm
 pd.set_option('display.expand_frame_repr', False) # expand display of data columns if screen is wide
 import params as param
+import os
 
-    
 
 ################################################################
 
-if __name__ == '__main__':
+def process_respondent(mode):
     # paths
     wd = pl.Path.cwd()
     datapath = wd/"data"
@@ -26,8 +26,8 @@ if __name__ == '__main__':
     
     # file names
     archnw = datapath/"Archetypes_Network.xlsx"
-    styles = datapath/"CreativeStyles_Tag_Summary.xlsx"
-    team = datapath/"Team_Survey_Responses.xlsx"   
+    styles = datapath/"Cluster_Top_Habits.xlsx"
+    team = datapath/"Test_Survey_Responses.xlsx"   
     
     # params
     topN = 10 # number of top matches to find              
@@ -82,6 +82,9 @@ if __name__ == '__main__':
         df_top_n_matches = pd.concat(respondents) 
         df_top_n_matches['Clus_Top_Habits_match'] = df_top_n_matches.Clus_Top_Habits_match.apply(lambda x: "|".join(x)) # convert list to string for grouping
         
+        if not os.path.exists(resultspath):
+            os.mkdir(resultspath)
+
         # write file of all matches for each sortyby strategy run
         df_top_n_matches.to_csv(resultspath/('team_top_n_matches_' + str(sortby) + '.csv'), index=False)
         
@@ -137,6 +140,13 @@ if __name__ == '__main__':
         
     
     # write results file
-    df_best_matches.to_csv(resultspath/('team_best_of_'+ str(topN) + "top_matches_" + str(len(sortbylist)) +'approaches.csv'), index=False)
+    if mode == 'new_file':
+        df_best_matches.to_csv(resultspath/('team_best_of_'+ str(topN) + "top_matches_" + str(len(sortbylist)) +'approaches.csv'), index=False)
+    elif mode == 'api_response':
+        return df_best_matches.to_json()
+    else:
+        print('unknown mode')
     
     
+if __name__ == '__main__':
+    process_respondent('new_file')

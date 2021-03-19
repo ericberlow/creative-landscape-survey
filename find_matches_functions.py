@@ -33,7 +33,7 @@ def process_archetypes(df_arch, df_clus):
 
 
 def get_score_thresholds(origCols, newCols):
-    df = pd.read_excel("data/CreativeStyles_Network_all.xlsx" , sheet_name ='nodes', engine='openpyxl')
+    df = pd.read_excel("data/Archetypes_Network.xlsx" , sheet_name ='nodes', engine='openpyxl')
     # map each ordinal column to one of 3 threshold senarios
     # return dictionary of column by type
     threshDict = {}
