@@ -48,8 +48,6 @@ def process_respondent(df):
     df_arch = pd.read_excel(archnw, sheet_name ='nodes', engine='openpyxl')
     df_arch.drop(['Discipline'], axis=1, inplace=True )
     df_clus = pd.read_excel(top_habits, engine='openpyxl')
-    df =  pd.read_excel(team, engine='openpyxl') # team survey results
-
     # add cluster metadata to archetypes
     df_arch_meta, df_clus_meta, archHabits, topHabits = fm.process_archetypes_cluster_metadata(df_arch, df_clus)
     
