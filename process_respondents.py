@@ -64,6 +64,7 @@ if __name__ == '__main__':
     
     
     ##### write final best match file:
+    df_best_match = df_best_match[param.finalCols]
     df_best_match.to_csv(param.resultspath/("best_match.csv"), index=False)
         
     

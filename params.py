@@ -21,11 +21,22 @@ resultspath = wd/"results"
    # variables from TopN matches to groupby and keep when summarizing top n matches. 
 topN_groupVars = ['id', 'Habits_All','Habits_Orig','Top_Habits',  'n_habits_all', 'n_habits_orig', 'Cluster_ID', 'Clus_Top_Habits' ] + ['Name']
    # final attributes to keep in the best_match summary 
-bestMatch_finalCols = ['id', 'Habits_All', 'Habits_Orig', 'Top_Habits', 'n_habits_all', 'n_habits_orig',
-                 'Cluster_ID', 'Clus_Top_Habits','frac_top_habits', 'top_habits_sim','habits_sim',
-                 'Habits_unique', 'Habits_Clus_shared', 'Habits_Clus_union', 'n_unique', 'n_shared', 'n_union', 'x_tsne', 'y_tsne'] + ['Name']
+bestMatch_finalCols = ['id', 'Name','Cluster_ID', 'Habits_All', 'Habits_Orig','Top_Habits', 'Clus_Top_Habits', 
+                       'Habits_unique', 'Habits_Clus_shared', 
+                       'n_habits_all', 'n_habits_orig', 'frac_top_habits', 'top_habits_sim','habits_sim',
+                       'n_unique', 'n_shared', 'x_tsne', 'y_tsne']
                  #  'sortby_strategy',  'count', 'frac_top_'+str(topN) ] 
-    
+finalCols = ['id','Name', 'Cluster_ID', 'Creative_Species', 'Clus_Percent','Cluster_Affinity', 'Clus_Top_Habits', 
+             'Habits_All', 'Habits_Clus_shared', 'Habits_unique','n_habits_all', 'n_unique', 'n_shared',
+             'x', 'y',  'Mono Routinus_affinity', 'Yolo Chaotis_affinity', 'Socialis Adventurous_affinity',
+             'Focus Mononovous_affinity', 'Novo Gregarious_affinity', 'Sui Inspira_affinity', 'Solo Noctus_affinity',
+             'Montasker -- Multitasker','Specialist -- Generalist','Solo Creator -- Collaborator','Self-Critical -- Self-Assured',
+             'Distractible -- Focused','Inwardly vs Outwardly Inspired', 'Rational -- Intuitive', 'Internally vs Externally Motivated',
+             'NonKinetic -- Kinetic', 'Controlled Chaos -- Organized', 'Slow -- Fast Paced', 'Pragmastist -- Perfectionist',
+             'Risk Averse -- Risk Friendly','Make It Happen -- Let It Happen','Tenacious -- Reframer','Private vs Public Workspace',
+             'Work in Silence vs Noise/Music', 'Urban -- Nature', 'Novetly Seeker -- Creature of Habit', 'Stifled_By vs Stimulated_By Constraints',
+             'Happy -- Tortured', 'Non-Performer -- Performer', 'Solo-Ideator -- Group-Ideator', 'Consistent -- Inconsistent',
+             'Creative_Process','Biorhythm']    
 
 # list of ordinal columns
 orig_OrdCols = ['Montasker -- Multitasker', # 'Monotasker -- Multitasker'
