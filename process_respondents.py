@@ -77,7 +77,7 @@ def process_respondent(df):
 
 
     ##### write final best match file:
-    return df_best_match
+    return df_best_match[param.finalCols]
 
 ################################################################
 

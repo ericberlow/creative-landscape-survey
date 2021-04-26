@@ -215,8 +215,11 @@ def find_top_n_matches(row, df_ref, rowCols, topN = 5, sortby=['top_habits_sim',
     target_habits = row['Habits_Orig'].split("|") # respondent subset of habits that are among the 42 total of the original survey
     target_top_habits = row['Top_Habits'].split("|") # respondent subset of habits that are among the 36 top cluster habits
 
-
-    # get sim in habits between each reference person and the target person
+    # rename habits in habit lists
+    target_habits = rename_habits(target_habits)
+    target_top_habits = rename_habits(target_top_habits)
+    
+    # get sim in habits between each reference person and the target person   
     df_ref['habits_sim'] = df_ref['habit_list'].apply(lambda x: get_similarity(target_habits,x, metric='sorensen'))
      # get sim in cluster top habits between each reference person and the target person
     df_ref['top_habits_sim'] = df_ref['Clus_Top_Habits'].apply(lambda x: get_similarity(target_top_habits,x, metric='sorensen'))
@@ -245,7 +248,9 @@ def get_topN_matches_rowByrow(df, df_arch_meta, topN=10, sortby=['top_habits_sim
     df_arch_neta : dataframe of reference population with cluster metadata
     keepCols : columns to keep in processed results
     topN : number of top matches to find. The default is 10.
-    sorby : strategy for finding best match - default is- first  find best overlap with top cluster habits, then find most similar individual within
+    sorby : strategy for finding best match - default is- 
+        first find individuala with most similar top clus habits (just using habits that are among top cluster habits globally), 
+        then sort those by similararity in their full original habit list (just using habits that were in origianl survey)
 
     Returns - dataframe with topN matches, their clusters
 
@@ -290,11 +295,11 @@ def add_rare_breed (df, mintags):
     # replace Cluster ID with "Rare Breed"
     df['Cluster_ID'] = df.apply(lambda x: "Rare Breed" if x['n_habits_orig'] <= mintags else x['Cluster_ID'], axis=1)
     # replace habit lists with  ["Rare Breed"]
-    replaceCols = ['Clus_Top_Habits','Habits_Clus_shared', 'Habits_Clus_union', 'Top_Habits' ]
+    replaceCols = ['Clus_Top_Habits','Habits_Clus_shared', 'Top_Habits' ]
     for col in replaceCols:
         df[col] = df.apply(lambda x: ["Rare Breed"] if x['n_habits_orig'] <= mintags else x[col], axis=1)
     # replace with 0
-    replace_w_zero_cols = ['x_tsne', 'y_tsne', 'n_shared', 'n_union']
+    replace_w_zero_cols = ['x_tsne', 'y_tsne', 'n_shared']
     for col in replace_w_zero_cols:
         df[col] = df.apply(lambda x: 0 if x['n_habits_orig'] <= mintags else x[col], axis=1)
     # replace unique habits with all habits
@@ -341,11 +346,16 @@ def process_topN_matches(df_top_n_matches, df_clus_meta, groupVars = param.topN_
     # convert habits to list
     habit_attrs = ['Habits_All','Habits_Orig','Top_Habits', 'Clus_Top_Habits']
     for attr in habit_attrs:
-        df_best_match[attr] =  df_best_match[attr].apply(lambda x: x.split("|"))
+        df_best_match[attr] =  df_best_match[attr].apply(lambda x: x.split("|")) 
 
-    # add list of unique (original) habits not in top cluster habits
+    # rename habits in habit lists
+    habitCols = ['Habits_All', 'Habits_Orig', 'Top_Habits','Clus_Top_Habits']
+    for col in habitCols:
+        df_best_match[col] = df_best_match[col].apply(lambda x: rename_habits(x))
+        
+    # add list of unique (original) habits not in top cluster habits                               
     df_best_match['Habits_unique'] = df_best_match.apply(lambda x: list(set(x['Habits_All']).difference(set(x['Clus_Top_Habits']))), axis=1)
-    df_best_match['Habits_Clus_shared'] = df_best_match.apply(lambda x: list(set(x['Habits_Orig']).intersection(set(x['Clus_Top_Habits']))), axis=1)
+    df_best_match['Habits_Clus_shared'] = df_best_match.apply(lambda x: list(set(x['Habits_All']).intersection(set(x['Clus_Top_Habits']))), axis=1)
     df_best_match['Habits_Clus_union'] = df_best_match.apply(lambda x: list(set(x['Habits_Orig']).union(set(x['Clus_Top_Habits']))), axis=1)
     df_best_match['n_unique'] = df_best_match['Habits_unique'].apply(lambda x: len(x))
     df_best_match['n_shared'] = df_best_match['Habits_Clus_shared'].apply(lambda x: len(x))
@@ -368,10 +378,6 @@ def process_topN_matches(df_top_n_matches, df_clus_meta, groupVars = param.topN_
                                     'y_tsne': 'y'}, inplace=True)
     df_best_match.rename(columns = param.ordCol_renameDict, inplace=True)
 
-    # rename habits in habit lists
-    habitCols = ['Habits_All', 'Habits_Orig', 'Top_Habits','Clus_Top_Habits','Habits_unique', 'Habits_Clus_shared','Habits_Clus_union']
-    for col in habitCols:
-        df_best_match[col] = df_best_match[col].apply(lambda x: rename_habits(x))
 
     return df_best_match
 
