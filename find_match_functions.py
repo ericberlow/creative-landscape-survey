@@ -400,6 +400,10 @@ def add_final_bestMatch_metadata(df_best_match, df_clus_meta, df_survey_response
     df_clus_affinity = df_clus_meta.set_index('Creative_Species')
     for species in speciesList:
         spp_top_habits = df_clus_affinity.loc[species].Clus_Top_Habits
+        spp_percent = df_clus_affinity.loc[species].Clus_Percent
+        df_best_match[species+"_percent"] = spp_percent
+        df_best_match[species+"_top_habits"] = "|".join(spp_top_habits)
+        df_best_match[species+"_top_habits"] = df_best_match[species+"_top_habits"].apply(lambda x: x.split(","))        
         df_best_match[species+"_affinity"] = df_best_match['Top_Habits'].apply(lambda x: get_similarity(spp_top_habits, x, metric= 'frac_1_in_2')) #'sorensen'
     # add raw surveuy redsponses
     df_best_match = df_best_match.merge(df_survey_responses, on='id', how='left')
