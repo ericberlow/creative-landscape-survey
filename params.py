@@ -168,6 +168,7 @@ ordCol_renameDict = {'Montasker -- Multitasker':  'Monotasker -- Multitasker',
 
 habit_renameDict = {'Distractible': 'Like Distractions',
                     'Focused': 'Dislike Distractions',
+                    'Hate Distractions': 'Dislike Distractions',
                     'Controlled Chaos': 'Comforting Mess',
                     'Organized': 'Tidy',
                     'Slow Paced': 'Slow-Paced',
